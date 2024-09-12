@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const facilityValidationSchema = z.object({
+const productValidationSchema = z.object({
   body: z.object({
     name: z
       .string({
@@ -31,7 +31,7 @@ const facilityValidationSchema = z.object({
     isDeleted: z.boolean().optional(),
   }),
 });
-const UpdatefacilityValidationSchema = z.object({
+const UpdateproductValidationSchema = z.object({
   body: z.object({
     name: z
       .string({
@@ -70,7 +70,7 @@ const UpdatefacilityValidationSchema = z.object({
   }),
 });
 
-export const facilityValidations = {
-  facilityValidationSchema,
-  UpdatefacilityValidationSchema,
+export const productValidations = {
+  productValidationSchema,
+  UpdateproductValidationSchema,
 };

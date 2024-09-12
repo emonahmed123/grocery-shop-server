@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
-import { TFacility } from './Facility.interface';
+import { TProduct } from './products.interface';
 
-const facilityschema = new Schema<TFacility>(
+const productschema = new Schema<TProduct>(
   {
     name: {
       type: String,
@@ -27,4 +27,4 @@ const facilityschema = new Schema<TFacility>(
   { timestamps: true },
 );
 
-export const Facility = model<TFacility>('Facility', facilityschema);
+export const Product = model<TProduct>('Product', productschema);

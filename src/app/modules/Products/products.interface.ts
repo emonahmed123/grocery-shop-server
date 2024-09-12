@@ -1,4 +1,4 @@
-export type TFacility = {
+export type TProduct = {
   name: string;
   description: string;
   pricePerHour: number;
