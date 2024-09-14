@@ -1,11 +1,10 @@
 import { Types } from 'mongoose';
 
 export type TBooking = {
-  user?: Types.ObjectId;
-  facility: Types.ObjectId;
-  date: string;
-  startTime: string;
-  endTime: string;
-  payableAmount?: number;
-  isBooked?: 'confirmed' | 'unconfirmed' | 'canceled';
+  name: string;
+  userId: Types.ObjectId;
+  products: Types.ObjectId[];
+  quantity: number;
+  totalAmount:number;
+  status?: 'pending' | 'delivered';
 };

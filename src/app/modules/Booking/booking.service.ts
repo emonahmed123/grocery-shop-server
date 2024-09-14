@@ -3,9 +3,14 @@
 import { JwtPayload } from 'jsonwebtoken';
 
 import { Booking } from './booking.model';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { TBooking } from './booking.interface';
 
-const createBookingIntoDb = async () => {};
+const createBookingIntoDb = async (payload: TBooking) => {
+  const reslut = await Booking.create(payload);
+
+  return reslut;
+};
 
 const getAllBookingIntoDb = async () => {
   const reslut = await Booking.find({ isBooked: 'confirmed' });
@@ -14,30 +19,32 @@ const getAllBookingIntoDb = async () => {
 };
 
 const getMyBookingIntoDb = async (user: JwtPayload) => {
-  const result = await Booking.find({ user: user, isBooked: 'confirmed' });
+  
+  
+  const result = await Booking.find({ userId:user}).populate({
+    path: 'products',
+    select: 'name image',
+  });;
 
   return result;
 };
 
 const deleteBookingIntoDb = async (id: string) => {
-  const session = await mongoose.startSession();
+
   try {
-    // start transaction
-    session.startTransaction();
+    
+ 
 
     const result = await Booking.findByIdAndUpdate(
       id,
-      { isBooked: 'canceled' },
-      { session },
-    ).populate('facility');
+      
+    )
 
-    await session.commitTransaction();
-    await session.endSession();
+
 
     return result;
   } catch (error: any) {
-    await session.abortTransaction();
-    await session.endSession();
+ 
     throw new Error(error);
   }
 };

@@ -15,14 +15,14 @@ const productValidationSchema = z.object({
         invalid_type_error: 'description must be a string',
       })
       .min(6, { message: 'description can  be more than 6 charactes' }),
-
-    pricePerHour: z.number({
-      required_error: ' pricePerHour is required',
-      invalid_type_error: ' pricePerHour must be a number',
+    price: z.number({
+      required_error: 'Price is required',
+      invalid_type_error: 'Price must be a string',
     }),
-    location: z.string({
-      required_error: ' location is required',
-      invalid_type_error: 'location must be a string',
+
+    category: z.string({
+      required_error: 'category is Required ',
+      invalid_type_error: 'Category must be a string',
     }),
     image: z.string({
       required_error: 'image is required',

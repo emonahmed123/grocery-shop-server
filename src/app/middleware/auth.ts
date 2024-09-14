@@ -27,6 +27,8 @@ const auth = (...requiredRoles: TUserRole[]) => {
 
     // console.log(decoded);
     // checking if the user is exist
+    // console.log(decoded);
+
     const user = await User.isUserExistsByEmail(email);
 
     if (!user) {

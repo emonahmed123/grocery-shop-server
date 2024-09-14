@@ -11,7 +11,6 @@ const router = express.Router();
 router.get('/:id', ProductController.getSingle);
 router.post(
   '/',
-  auth(USER_ROLE.admin),
   validateRequest(productValidations.productValidationSchema),
   ProductController.creatProduct,
 );

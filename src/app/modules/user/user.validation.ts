@@ -11,17 +11,12 @@ const signupValidationSchema = z.object({
       required_error: 'Password is required',
       invalid_type_error: 'Password must be a string',
     }),
-    phone: z.string({
-      required_error: 'Phone is required',
-      invalid_type_error: 'Phone must be a string',
-    }),
-    address: z.string({
-      required_error: 'Address is required',
-      invalid_type_error: 'Address must be a string',
-    }),
-    role: z.enum(['admin', 'user'], {
-      required_error: 'Role is required',
-    }),
+
+    role: z
+      .enum(['admin', 'user'], {
+        required_error: 'Role is required',
+      })
+      .default('user'),
     isDeleted: z.boolean().optional(),
   }),
 });
@@ -49,18 +44,7 @@ const updateUserValidationSchema = z.object({
         invalid_type_error: 'Password must be a string',
       })
       .optional(),
-    phone: z
-      .string({
-        required_error: 'Phone is required',
-        invalid_type_error: 'Phone must be a string',
-      })
-      .optional(),
-    address: z
-      .string({
-        required_error: 'Address is required',
-        invalid_type_error: 'Address must be a string',
-      })
-      .optional(),
+
     role: z
       .enum(['admin', 'user'], {
         required_error: 'Role is required',

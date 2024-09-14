@@ -1,18 +1,34 @@
 import { model } from 'mongoose';
 import { Schema } from 'mongoose';
-
-const bookingSchema = new Schema(
+import { TBooking } from './booking.interface';
+const bookingSchema = new Schema<TBooking>(
   {
-    user: {
+    name: {
+      type: String,
+      required: true,
+    },
+    products: {
+      type:[ Schema.Types.ObjectId],
+      ref: 'Product',
+      required: true,
+    },
+    userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-
-    isBooked: {
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    status: {
       type: String,
-      enum: ['confirmed', 'unconfirmed', 'canceled'],
-      default: 'unconfirmed',
+      enum: ['pending', 'delivered'],
+      default: 'pending',
     },
   },
   { timestamps: true },

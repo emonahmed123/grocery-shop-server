@@ -8,5 +8,3 @@
 <li> In the terminal run this command  npm run build</li>
 <li> At last, run this command  npm run start:dev </li>
 </ul>
-<h5>"email":"web@programming-hero.com" (admin),
-    "password":"programming-hero" </h5>

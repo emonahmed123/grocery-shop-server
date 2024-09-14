@@ -7,7 +7,7 @@ const creatProductIntoDb = async (payload: TProduct) => {
   return result;
 };
 const getProductIntoDb = async () => {
-  const result = await Product.find({ isDeleted: false });
+  const result = await Product.find({ isDeleted: false }).select('-isDeleted');
 
   return result;
 };
