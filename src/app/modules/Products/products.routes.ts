@@ -18,18 +18,18 @@ router.post(
 router.put(
   '/:id',
   auth(USER_ROLE.admin),
-  validateRequest(productValidations.productValidationSchema),
+  validateRequest(productValidations.UpdateproductValidationSchema),
   ProductController.updateProduct,
 );
 
 router.delete(
   '/:id',
   auth(USER_ROLE.admin),
-  validateRequest(productValidations.productValidationSchema),
+
   ProductController.deleteProduct,
 );
 
-router.delete('/:id', ProductController.deleteProduct);
+// router.delete('/:id', ProductController.deleteProduct);
 
 router.get('/', ProductController.getAllProduct);
 

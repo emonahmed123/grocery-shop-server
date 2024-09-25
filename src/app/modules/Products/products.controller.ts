@@ -50,6 +50,7 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const deleteProduct = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.params);
   const { id } = req.params;
 
   const result = await ProductService.deleteProductIntoDb(id);

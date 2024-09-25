@@ -17,7 +17,7 @@ const productValidationSchema = z.object({
       .min(6, { message: 'description can  be more than 6 charactes' }),
     price: z.number({
       required_error: 'Price is required',
-      invalid_type_error: 'Price must be a string',
+      invalid_type_error: 'Price must be a number',
     }),
 
     category: z.string({
