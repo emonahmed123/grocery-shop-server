@@ -19,6 +19,11 @@ router.post(
   userController.Createsignup,
 );
 router.post(
+  '/googleUser',
+  validateRequest(userValidationSchemas.loginValidationSchema),
+  userController.googleUser,
+);
+router.post(
   '/login',
   validateRequest(userValidationSchemas.loginValidationSchema),
   userController.loginUser,
@@ -29,5 +34,15 @@ router.get(
   auth(USER_ROLE.admin, USER_ROLE.user),
   userController.getProfile,
 );
-
+router.post(
+  '/change',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  userController.addImage,
+);
+router.post(
+  '/googleUser',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  userController.getProfile,
+);
+router.get('/alluser', userController.allUser);
 export const userRoutes = router;

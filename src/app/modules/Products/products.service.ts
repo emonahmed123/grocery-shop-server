@@ -17,6 +17,12 @@ const getSingleProductIntoDb = async (id: string) => {
 
   return result;
 };
+const SelRevenuIntoDb = async () => {
+  const Products = await Product.find({ isDeleted: false });
+
+  const revenePerproduct = Products.map((product) => product.price - 100);
+  console.log(revenePerproduct);
+};
 
 const updateProductIntoDb = async (id: string, payload: TProduct) => {
   const result = await Product.findByIdAndUpdate(id, payload, {
@@ -45,4 +51,5 @@ export const ProductService = {
   deleteProductIntoDb,
   getProductIntoDb,
   getSingleProductIntoDb,
+  SelRevenuIntoDb,
 };

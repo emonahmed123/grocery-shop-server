@@ -24,6 +24,17 @@ const getAllProduct = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+const SelRevenu = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.SelRevenuIntoDb();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product retrieved successfully',
+    data: result,
+  });
+});
+
 const getSingle = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   // console.log(id);
@@ -69,4 +80,5 @@ export const ProductController = {
   deleteProduct,
   getAllProduct,
   getSingle,
+  SelRevenu,
 };

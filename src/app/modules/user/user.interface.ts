@@ -10,6 +10,7 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
+  image?: string;
 }
 
 export type TLoginUser = {

@@ -14,6 +14,7 @@ const userSchema = new Schema<IUser, UserModel>(
       required: true,
       default: 'user',
     },
+    image: { type: String },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     isDeleted: { type: Boolean, default: false },

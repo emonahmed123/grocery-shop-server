@@ -32,5 +32,5 @@ router.delete(
 // router.delete('/:id', ProductController.deleteProduct);
 
 router.get('/', ProductController.getAllProduct);
-
+router.get('/revenue', ProductController.SelRevenu);
 export const productRouter = router;

@@ -19,7 +19,12 @@ router.put(
 
   bookingController.deleteBooking,
 );
-
+router.get('/total-sale', bookingController.TotalSale);
+router.get(
+  '/totalbuy',
+  auth(USER_ROLE.user),
+  bookingController.getBookingByUser,
+);
 router.get('/', auth(USER_ROLE.admin), bookingController.getAllBooking);
 router.get('/user', auth(USER_ROLE.user), bookingController.getmyBooking);
 

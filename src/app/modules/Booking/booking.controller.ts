@@ -26,6 +26,16 @@ const getAllBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const TotalSale = catchAsync(async (req: Request, res: Response) => {
+  const result = await BookingService.TotalSaleIntoDb();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Total Sale retrieved successfully',
+    data: result,
+  });
+});
+
 const deleteBooking = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -35,6 +45,16 @@ const deleteBooking = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Bookings cancel successfully',
+    data: result,
+  });
+});
+const getBookingByUser = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const result = await BookingService.getBookingByUserIntoDb(user.userId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Bookings retrieved successfully',
     data: result,
   });
 });
@@ -57,4 +77,6 @@ export const bookingController = {
   getAllBooking,
   getmyBooking,
   deleteBooking,
+  TotalSale,
+  getBookingByUser,
 };
