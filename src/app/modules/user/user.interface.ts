@@ -11,6 +11,8 @@ export interface IUser {
   updatedAt: Date;
   isDeleted: boolean;
   image?: string;
+  phone?: string;
+  address?: string;
 }
 
 export type TLoginUser = {

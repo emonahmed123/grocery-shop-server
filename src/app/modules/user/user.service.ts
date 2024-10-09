@@ -114,7 +114,7 @@ const PostImageIntoDb = async (payload: any, id: string) => {
   console.log(payload, id);
   const reslut = await User.findByIdAndUpdate(
     id,
-    { $set: { image: payload.image } },
+    { $set: payload },
     { new: true, runValidators: true },
   );
   return reslut;

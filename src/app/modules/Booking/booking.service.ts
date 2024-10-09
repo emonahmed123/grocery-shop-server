@@ -32,7 +32,10 @@ const TotalSaleIntoDb = async () => {
   return { Pending, totalAmount: result[0].totalAmount };
 };
 const getMyBookingIntoDb = async (user: JwtPayload) => {
-  const result = await Booking.find({ userId: user });
+  const result = await Booking.find({ userId: user }).populate({
+    path: 'products',
+    select: 'name image',
+  });
 
   return result;
 };
