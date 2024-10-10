@@ -15,7 +15,9 @@ const creatProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllProduct = catchAsync(async (req: Request, res: Response) => {
-  const result = await ProductService.getProductIntoDb();
+  console.log(req.query);
+
+  const result = await ProductService.getProductIntoDb(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

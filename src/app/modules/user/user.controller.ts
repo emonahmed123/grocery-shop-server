@@ -28,9 +28,7 @@ const loginUser = catchAsync(async (req, res) => {
 
 const googleUser = catchAsync(async (req, res) => {
   const result = await userService.googleUser(req.body);
-  const value = (userService) => {
-    console.log(value);
-  };
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

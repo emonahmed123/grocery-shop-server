@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TProduct } from './products.interface';
 import { Product } from './products.model';
 
@@ -6,8 +7,15 @@ const creatProductIntoDb = async (payload: TProduct) => {
 
   return result;
 };
-const getProductIntoDb = async () => {
-  const result = await Product.find({ isDeleted: false }).select('-isDeleted');
+const getProductIntoDb = async (fillter: any) => {
+  let result;
+  if (fillter.category) {
+    result = await Product.find({
+      $and: [{ category: fillter.category }, { isDeleted: false }],
+    });
+  } else {
+    result = await Product.find({ isDeleted: false }).select('-isDeleted');
+  }
 
   return result;
 };
