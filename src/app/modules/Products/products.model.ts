@@ -1,5 +1,19 @@
 import { model, Schema } from 'mongoose';
-import { TProduct } from './products.interface';
+import { TOffer, TProduct } from './products.interface';
+
+const offerSchema = new Schema<TOffer>(
+  {
+    offerType: {
+      type: String,
+      enum: ['discount', 'freeshipping'],
+      required: true,
+    },
+    value: { type: Number, required: true },
+    validUntil: { type: Date, required: true },
+    isActive: { type: Boolean, default: true },
+  },
+  { _id: false },
+);
 
 const productschema = new Schema<TProduct>(
   {
@@ -17,8 +31,10 @@ const productschema = new Schema<TProduct>(
     },
     category: { type: String, required: true, message: 'Category Required' },
     price: { type: Number, required: true },
+    isAvailable: { type: Boolean, default: true },
     image: { type: String, required: true },
     isDeleted: { type: Boolean, default: false },
+    offer: [offerSchema],
   },
   { timestamps: true },
 );

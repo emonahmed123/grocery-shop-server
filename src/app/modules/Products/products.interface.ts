@@ -4,5 +4,14 @@ export type TProduct = {
   image: string;
   category: string;
   price: number;
+  isAvailable: boolean;
+  offer: string[];
   isDeleted: boolean;
+};
+
+export type TOffer = {
+  offerType: 'discount' | 'freeshipping';
+  value: number;
+  validUntil: Date | string;
+  isActive: boolean;
 };
