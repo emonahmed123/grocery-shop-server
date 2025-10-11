@@ -7,6 +7,9 @@ export type TProduct = {
   isAvailable: boolean;
   offer: string[];
   isDeleted: boolean;
+  inStock: number;
+  averageRating: number;
+  ratingCount: number;
 };
 
 export type TOffer = {
