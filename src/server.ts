@@ -8,9 +8,12 @@ async function main() {
   try {
     await mongoose.connect(config.database_url as string);
 
-    app.listen(config.port, () => {
-      console.log(`server listening on port ${config.port}`);
-    });
+    // On Vercel the exported app runs as a function, so only listen locally.
+    if (!process.env.VERCEL) {
+      server = app.listen(config.port, () => {
+        console.log(`server listening on port ${config.port}`);
+      });
+    }
   } catch (err) {
     console.log(err);
   }
@@ -30,3 +33,5 @@ process.on('uncaughtException', () => {
   console.log(`😈 uncaughtException is detected , shutting down ...`);
   process.exit(1);
 });
+
+export default app;
