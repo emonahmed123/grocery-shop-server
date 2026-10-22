@@ -6,6 +6,7 @@ export interface IUser {
   name: string;
   email: string;
   password: string;
+  passwordChangedAt?: Date;
   role: 'admin' | 'user';
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,10 @@ export interface UserModel extends Model<IUser> {
     planTextPassword: string,
     hashedPassword: string,
   ): Promise<boolean>;
+  isJWTIssuedBeforePasswordChanged(
+    passwordChangedAt: Date | undefined,
+    jwtIssuedAt: number | undefined,
+  ): boolean;
 }
 
 export type TUserRole = keyof typeof USER_ROLE;

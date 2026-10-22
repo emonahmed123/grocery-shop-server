@@ -26,6 +26,53 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
+const refreshToken = catchAsync(async (req, res) => {
+  const token =
+    req.body?.refreshToken || req?.headers?.authorization?.split(' ')[1];
+  const result = await userService.refreshToken(token);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Access token is retrieved succesfully!',
+    data: result,
+  });
+});
+
+const changePassword = catchAsync(async (req, res) => {
+  const result = await userService.changePassword(req.user, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Password changed successfully!',
+    data: result,
+  });
+});
+
+const forgetPassword = catchAsync(async (req, res) => {
+  await userService.forgetPassword(req.body.email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message:
+      'If an account exists with this email, a reset link has been sent.',
+    data: null,
+  });
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+  await userService.resetPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Password reset successfully, please login',
+    data: null,
+  });
+});
+
 const googleUser = catchAsync(async (req, res) => {
   const result = await userService.googleUser(req.body);
 
@@ -73,6 +120,10 @@ const allUser = catchAsync(async (req: Request, res: Response) => {
 export const userController = {
   Createsignup,
   loginUser,
+  refreshToken,
+  changePassword,
+  forgetPassword,
+  resetPassword,
   getProfile,
   allUser,
   googleUser,

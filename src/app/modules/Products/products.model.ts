@@ -1,16 +1,31 @@
 import { model, Schema } from 'mongoose';
-import { TOffer, TProduct } from './products.interface';
+import { TFlashSale, TProduct, TVariation } from './products.interface';
+import { getCurrentPrice } from './products.utils';
 
-const offerSchema = new Schema<TOffer>(
+const flashSaleSchema = new Schema<TFlashSale>(
   {
-    offerType: {
-      type: String,
-      enum: ['discount', 'freeshipping'],
+    discountPercentage: { type: Number, required: true, min: 1, max: 99 },
+    startAt: { type: Date, required: true },
+    endAt: {
+      type: Date,
       required: true,
+      validate: {
+        validator: function (this: TFlashSale, endAt: Date) {
+          return !this.startAt || endAt > this.startAt;
+        },
+        message: 'Flash sale must end after it starts',
+      },
     },
-    value: { type: Number, required: true },
-    validUntil: { type: Date, required: true },
-    isActive: { type: Boolean, default: true },
+    quantityLimit: { type: Number, min: 1 },
+    soldCount: { type: Number, default: 0, min: 0 },
+  },
+  { _id: false },
+);
+
+const variationSchema = new Schema<TVariation>(
+  {
+    name: { type: String, required: true, trim: true },
+    values: { type: [String], required: true },
   },
   { _id: false },
 );
@@ -19,21 +34,29 @@ const productschema = new Schema<TProduct>(
   {
     name: {
       type: String,
-      required: true,
-      min: [3, 'Must be at least 3, got {VALUE}'],
-      message: '{VALUE} is required',
+      required: [true, 'Name is required'],
+      trim: true,
+      minlength: [3, 'Name must be at least 3 characters'],
     },
-    description: {
+    slug: {
       type: String,
-      required: true,
-      min: [5, 'Must be at least 3, got {VALUE}'],
-      message: '{VALUE} is required',
+      required: [true, 'Slug is required'],
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
-    category: { type: String, required: true, message: 'Category Required' },
-    price: { type: Number, required: true },
+    image: { type: String, required: [true, 'Image is required'] },
+    unit: { type: String, required: [true, 'Unit is required'], trim: true },
+    price: { type: Number, required: [true, 'Price is required'], min: 0 },
+    salePrice: { type: Number, min: 0 },
+    maxPrice: { type: Number, min: 0 },
+    description: { type: String, trim: true },
+    gallery: { type: [String], default: [] },
+    tags: { type: [String], default: [] },
+    variations: { type: variationSchema },
+    category: { type: String, trim: true },
     isAvailable: { type: Boolean, default: true },
     inStock: { type: Number, default: 0 },
-    image: { type: String, required: true },
     averageRating: {
       type: Number,
       default: 0,
@@ -46,9 +69,25 @@ const productschema = new Schema<TProduct>(
       min: 0,
     },
     isDeleted: { type: Boolean, default: false },
-    offer: [offerSchema],
+    flashSale: { type: flashSaleSchema },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+// what the customer pays right now, worked out on every read so an ended
+// flash sale never shows its old price
+productschema.virtual('currentPrice').get(function () {
+  if (this.price === undefined) return undefined;
+  return getCurrentPrice(this).price;
+});
+
+productschema.virtual('isOnFlashSale').get(function () {
+  if (this.price === undefined) return undefined;
+  return getCurrentPrice(this).isFlashSale;
+});
 
 export const Product = model<TProduct>('Product', productschema);

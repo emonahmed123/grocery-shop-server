@@ -23,7 +23,8 @@ const getAllProduct = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Product retrieved successfully',
-    data: result,
+    meta: result.meta,
+    data: result.result,
   });
 });
 
@@ -76,7 +77,45 @@ const deleteProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const setFlashSale = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.setFlashSaleIntoDb(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Flash sale set successfully',
+    data: result,
+  });
+});
+
+const removeFlashSale = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await ProductService.removeFlashSaleFromDb(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Flash sale removed successfully',
+    data: result,
+  });
+});
+
+const getFlashSaleProducts = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.getFlashSaleProductsFromDb(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Flash sale products retrieved successfully',
+    meta: result.meta,
+    data: result.result,
+  });
+});
+
 export const ProductController = {
+  setFlashSale,
+  removeFlashSale,
+  getFlashSaleProducts,
   creatProduct,
   updateProduct,
   deleteProduct,

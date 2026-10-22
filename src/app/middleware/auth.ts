@@ -42,6 +42,15 @@ const auth = (...requiredRoles: TUserRole[]) => {
       throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
     }
 
+    if (
+      User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, decoded.iat)
+    ) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        'Password was changed, please login again',
+      );
+    }
+
     if (requiredRoles && !requiredRoles.includes(role)) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
