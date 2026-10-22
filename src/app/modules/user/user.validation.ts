@@ -61,9 +61,43 @@ const loginValidationSchema = z.object({
   }),
 });
 
+const changePasswordValidationSchema = z.object({
+  body: z
+    .object({
+      oldPassword: z.string({ required_error: 'Old password is required' }),
+      newPassword: z
+        .string({ required_error: 'New password is required' })
+        .min(6, { message: 'New password must be at least 6 characters' }),
+    })
+    .refine((data) => data.oldPassword !== data.newPassword, {
+      message: 'New password must be different from the old one',
+      path: ['newPassword'],
+    }),
+});
+
+const forgetPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email({ message: 'Invalid email' }),
+  }),
+});
+
+const resetPasswordValidationSchema = z.object({
+  body: z.object({
+    token: z.string({ required_error: 'Reset token is required' }),
+    newPassword: z
+      .string({ required_error: 'New password is required' })
+      .min(6, { message: 'New password must be at least 6 characters' }),
+  }),
+});
+
 export const userValidationSchemas = {
   signupValidationSchema,
   loginValidationSchema,
+  changePasswordValidationSchema,
+  forgetPasswordValidationSchema,
+  resetPasswordValidationSchema,
 
   updateUserValidationSchema,
 };
