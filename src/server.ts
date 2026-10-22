@@ -1,12 +1,11 @@
-import mongoose from 'mongoose';
-
 import { Server } from 'http';
 import app from './app';
 import config from './app/config';
+import { connectDB } from './app/config/db';
 let server: Server;
 async function main() {
   try {
-    await mongoose.connect(config.database_url as string);
+    await connectDB();
 
     // On Vercel the exported app runs as a function, so only listen locally.
     if (!process.env.VERCEL) {
