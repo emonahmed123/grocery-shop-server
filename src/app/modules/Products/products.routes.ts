@@ -8,11 +8,23 @@ import { productValidations } from './products.validation';
 
 const router = express.Router();
 
+// fixed paths first, so they are not caught by '/:id'
+router.get('/', ProductController.getAllProduct);
+router.get('/flash-sale', ProductController.getFlashSaleProducts);
+router.get('/revenue', ProductController.SelRevenu);
 router.get('/:id', ProductController.getSingle);
+
 router.post(
   '/',
+   auth(USER_ROLE.admin),
   validateRequest(productValidations.productValidationSchema),
   ProductController.creatProduct,
+);
+router.post(
+  '/flash-sale',
+  auth(USER_ROLE.admin),
+  validateRequest(productValidations.flashSaleValidationSchema),
+  ProductController.setFlashSale,
 );
 
 router.put(
@@ -23,6 +35,11 @@ router.put(
 );
 
 router.delete(
+  '/:id/flash-sale',
+  auth(USER_ROLE.admin),
+  ProductController.removeFlashSale,
+);
+router.delete(
   '/:id',
   auth(USER_ROLE.admin),
 
@@ -31,6 +48,4 @@ router.delete(
 
 // router.delete('/:id', ProductController.deleteProduct);
 
-router.get('/', ProductController.getAllProduct);
-router.get('/revenue', ProductController.SelRevenu);
 export const productRouter = router;
