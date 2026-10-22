@@ -5,23 +5,39 @@ import { BookingService } from './booking.service';
 import { Request, Response } from 'express';
 
 const CreateBooking = catchAsync(async (req: Request, res: Response) => {
-  const result = await BookingService.createBookingIntoDb(req.body);
+  const result = await BookingService.createBookingIntoDb(
+    req.body,
+    req.user.userId,
+  );
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: httpStatus.CREATED,
     success: true,
-    message: 'Booking created successfully ',
+    message: 'Booking created successfully',
     data: result,
   });
 });
 
 const getAllBooking = catchAsync(async (req: Request, res: Response) => {
-  const result = await BookingService.getAllBookingIntoDb();
+  const result = await BookingService.getAllBookingIntoDb(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Bookings retrieved successfully',
+    meta: result.meta,
+    data: result.result,
+  });
+});
+
+const getSingleBooking = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BookingService.getSingleBookingFromDb(id, req.user);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Booking retrieved successfully',
     data: result,
   });
 });
@@ -36,21 +52,53 @@ const TotalSale = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteBooking = catchAsync(async (req: Request, res: Response) => {
+const cancelBooking = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-
-  const result = await BookingService.deleteBookingIntoDb(id);
+  const result = await BookingService.cancelBookingIntoDb(id, req.user);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Bookings cancel successfully',
+    message: 'Booking cancelled successfully',
     data: result,
   });
 });
+
+const updateBookingStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BookingService.updateBookingStatusIntoDb(
+    id,
+    req.body.status,
+    req.user,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Booking status updated successfully',
+    data: result,
+  });
+});
+
+// kept for the old admin button that only marks a booking as delivered
+const deliverBooking = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BookingService.updateBookingStatusIntoDb(
+    id,
+    'delivered',
+    req.user,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Booking delivered successfully',
+    data: result,
+  });
+});
+
 const getBookingByUser = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-  const result = await BookingService.getBookingByUserIntoDb(user.userId);
+  const result = await BookingService.getBookingByUserIntoDb(req.user.userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -60,9 +108,7 @@ const getBookingByUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getmyBooking = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-
-  const result = await BookingService.getMyBookingIntoDb(user.userId);
+  const result = await BookingService.getMyBookingIntoDb(req.user.userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -75,8 +121,11 @@ const getmyBooking = catchAsync(async (req: Request, res: Response) => {
 export const bookingController = {
   CreateBooking,
   getAllBooking,
+  getSingleBooking,
   getmyBooking,
-  deleteBooking,
+  cancelBooking,
+  updateBookingStatus,
+  deliverBooking,
   TotalSale,
   getBookingByUser,
 };

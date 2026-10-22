@@ -28,6 +28,23 @@ router.post(
   validateRequest(userValidationSchemas.loginValidationSchema),
   userController.loginUser,
 );
+router.post('/refresh-token', userController.refreshToken);
+router.post(
+  '/change-password',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  validateRequest(userValidationSchemas.changePasswordValidationSchema),
+  userController.changePassword,
+);
+router.post(
+  '/forget-password',
+  validateRequest(userValidationSchemas.forgetPasswordValidationSchema),
+  userController.forgetPassword,
+);
+router.post(
+  '/reset-password',
+  validateRequest(userValidationSchemas.resetPasswordValidationSchema),
+  userController.resetPassword,
+);
 
 router.get(
   '/me',
