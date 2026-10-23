@@ -20,6 +20,7 @@ const orderItemSchema = new Schema<TOrderItem>(
     variation: { type: String },
     price: { type: Number, required: true, min: 0 },
     isFlashSale: { type: Boolean, default: false },
+    flashSaleId: { type: Schema.Types.ObjectId, ref: 'FlashSale' },
     quantity: { type: Number, required: true, min: 1 },
   },
   { _id: false },
