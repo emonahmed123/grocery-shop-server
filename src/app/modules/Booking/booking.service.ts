@@ -5,14 +5,22 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../error/AppError';
 import { Product } from '../Products/products.model';
 import { getCurrentPrice, roundPrice } from '../Products/products.utils';
+import {
+  changeFlashSaleSold,
+  ensureFlashSaleRecord,
+} from '../FlashSale/flashSale.service';
 import { USER_ROLE } from '../user/user.canstance';
-import { DELIVERY_FEES } from './booking.constant';
+import { BOOKING_SEARCHABLE_FIELDS, DELIVERY_FEES } from './booking.constant';
 import {
   TBookingStatus,
   TCreateBookingPayload,
   TOrderItem,
 } from './booking.interface';
 import { Booking } from './booking.model';
+import {
+  sendOrderPlacedEmail,
+  sendOrderStatusEmail,
+} from './booking.notifications';
 
 // the order a booking moves forward in; cancelled is handled on its own
 const STATUS_FLOW: TBookingStatus[] = [
@@ -31,6 +39,7 @@ type TStockLine = {
   product: Types.ObjectId | string;
   quantity: number;
   isFlashSale?: boolean;
+  flashSaleId?: Types.ObjectId;
 };
 
 // gives back the stock (and flash sale units) that were taken for an order
@@ -43,10 +52,26 @@ const restoreStock = async (items: TStockLine[]) => {
       );
 
       if (item.isFlashSale) {
-        await Product.updateOne(
-          { _id: item.product, 'flashSale.soldCount': { $gte: item.quantity } },
+        const filter: Record<string, unknown> = {
+          _id: item.product,
+          'flashSale.soldCount': { $gte: item.quantity },
+        };
+        // units only go back to the sale they were sold in, not to a newer one
+        if (item.flashSaleId) filter['flashSale.saleId'] = item.flashSaleId;
+
+        const before = await Product.findOneAndUpdate(
+          filter,
           { $inc: { 'flashSale.soldCount': -item.quantity } },
+          { projection: { 'flashSale.saleId': 1 } },
         );
+
+        // the history record gets its units back even when the sale has
+        // already left the product; an older line falls back to the sale it took them from
+        if (item.flashSaleId) {
+          await changeFlashSaleSold(item.flashSaleId, -item.quantity);
+        } else if (before?.flashSale?.saleId) {
+          await changeFlashSaleSold(before.flashSale.saleId, -item.quantity);
+        }
       }
     }),
   );
@@ -92,6 +117,13 @@ const createBookingIntoDb = async (
     }
   });
 
+  // a sale from before history was kept gets its record now, so this order can be linked to it
+  for (const product of products) {
+    if (product.flashSale && !product.flashSale.saleId) {
+      await ensureFlashSaleRecord(product);
+    }
+  }
+
   // one product can come twice with different variations,
   // so stock and flash sale limits are checked per product
   const quantityByProduct = new Map<string, number>();
@@ -122,6 +154,7 @@ const createBookingIntoDb = async (
       variation: item.variation,
       price,
       isFlashSale,
+      flashSaleId: isFlashSale ? product.flashSale?.saleId : undefined,
       quantity: item.quantity,
     };
   });
@@ -144,6 +177,7 @@ const createBookingIntoDb = async (
       filter['flashSale.discountPercentage'] = flashSale.discountPercentage;
       filter['flashSale.startAt'] = { $lte: now };
       filter['flashSale.endAt'] = { $gt: now };
+      if (flashSale.saleId) filter['flashSale.saleId'] = flashSale.saleId;
       if (flashSale.quantityLimit) {
         filter['flashSale.soldCount'] = {
           $lte: flashSale.quantityLimit - quantity,
@@ -167,7 +201,9 @@ const createBookingIntoDb = async (
           : `The flash sale for ${product.name} has changed, please try again`,
       );
     }
-    reserved.push({ product: productId, quantity, isFlashSale });
+    const flashSaleId = isFlashSale ? product.flashSale?.saleId : undefined;
+    if (flashSaleId) await changeFlashSaleSold(flashSaleId, quantity);
+    reserved.push({ product: productId, quantity, isFlashSale, flashSaleId });
   }
 
   const subTotal = roundPrice(
@@ -188,6 +224,7 @@ const createBookingIntoDb = async (
       totalAmount,
     });
 
+    await sendOrderPlacedEmail(result);
     return result;
   } catch (err) {
     await restoreStock(reserved);
@@ -197,7 +234,7 @@ const createBookingIntoDb = async (
 
 const getAllBookingIntoDb = async (query: Record<string, unknown>) => {
   const bookingQuery = new QueryBuilder(Booking.find(), query)
-    .search(['items.name', 'shippingAddress.phone', 'shippingAddress.district'])
+    .search(BOOKING_SEARCHABLE_FIELDS)
     .filter()
     .sort()
     .paginate()
@@ -241,10 +278,25 @@ const TotalSaleIntoDb = async () => {
   return { Pending, totalAmount: result[0]?.totalAmount || 0 };
 };
 
-const getMyBookingIntoDb = async (userId: string) => {
-  const result = await Booking.find({ userId }).sort('-createdAt');
+const getMyBookingIntoDb = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
+  // userId goes last so a userId in the query string can not show other users' bookings
+  const bookingQuery = new QueryBuilder(Booking.find(), { ...query, userId })
+    .search(BOOKING_SEARCHABLE_FIELDS)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
 
-  return result;
+  const result = await bookingQuery.modelQuery;
+  const meta = await bookingQuery.countTotal();
+
+  return {
+    meta,
+    result,
+  };
 };
 
 const getBookingByUserIntoDb = async (userId: string) => {
@@ -297,6 +349,7 @@ const cancelBookingIntoDb = async (id: string, user: JwtPayload) => {
   }
 
   await restoreStock(booking.items);
+  await sendOrderStatusEmail(result);
 
   return result;
 };
@@ -350,6 +403,7 @@ const updateBookingStatusIntoDb = async (
     );
   }
 
+  await sendOrderStatusEmail(result);
   return result;
 };
 

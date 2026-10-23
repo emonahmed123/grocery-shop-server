@@ -20,6 +20,8 @@ export type TOrderItem = {
   price: number;
   /** True when `price` is a flash sale price. */
   isFlashSale: boolean;
+  /** the flash sale this line was sold in; older orders do not have it */
+  flashSaleId?: Types.ObjectId;
   quantity: number;
 };
 

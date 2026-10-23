@@ -20,6 +20,9 @@ export default {
   // frontend page that opens the reset link, e.g. http://localhost:3000/reset-password
   reset_pass_ui_link: process.env.RESET_PASS_UI_LINK,
 
+  // the store's address, e.g. http://localhost:3000; used for links in emails
+  client_url: process.env.CLIENT_URL,
+
   smtp_host: process.env.SMTP_HOST,
   smtp_port: process.env.SMTP_PORT,
   smtp_user: process.env.SMTP_USER,

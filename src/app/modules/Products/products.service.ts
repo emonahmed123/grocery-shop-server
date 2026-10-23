@@ -1,6 +1,10 @@
 import httpStatus from 'http-status';
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../error/AppError';
+import {
+  closeFlashSale,
+  createFlashSaleRecord,
+} from '../FlashSale/flashSale.service';
 import { TProduct } from './products.interface';
 import { Product } from './products.model';
 
@@ -77,7 +81,7 @@ const setFlashSaleIntoDb = async (payload: TFlashSalePayload) => {
   const existingProducts = await Product.find({
     _id: { $in: productIds },
     isDeleted: false,
-  }).select('_id');
+  });
 
   if (existingProducts.length !== productIds.length) {
     const existingIds = existingProducts.map((product) => product.id);
@@ -88,26 +92,40 @@ const setFlashSaleIntoDb = async (payload: TFlashSalePayload) => {
     );
   }
 
-  // a new flash sale replaces the old one and starts counting from zero
-  await Product.updateMany(
-    { _id: { $in: productIds } },
-    {
-      flashSale: {
-        discountPercentage,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
-        quantityLimit,
-        soldCount: 0,
-      },
-    },
-    { runValidators: true },
-  );
+  const settings = {
+    discountPercentage,
+    startAt: new Date(startAt),
+    endAt: new Date(endAt),
+    quantityLimit,
+  };
+  const now = new Date();
+
+  // a new flash sale replaces the old one and starts counting from zero;
+  // the old one stays in the history, and each product gets its own record
+  for (const product of existingProducts) {
+    await closeFlashSale(product, 'replaced', now);
+    const saleId = await createFlashSaleRecord(product, settings);
+
+    await Product.updateOne(
+      { _id: product._id },
+      { flashSale: { ...settings, soldCount: 0, saleId } },
+      { runValidators: true },
+    );
+  }
 
   const result = await Product.find({ _id: { $in: productIds } });
   return result;
 };
 
 const removeFlashSaleFromDb = async (id: string) => {
+  const product = await Product.findOne({ _id: id, isDeleted: false });
+  if (!product) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This product is not found');
+  }
+
+  // the sale leaves the product but stays in the history
+  await closeFlashSale(product, 'removed');
+
   const result = await Product.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { $unset: { flashSale: 1 } },
