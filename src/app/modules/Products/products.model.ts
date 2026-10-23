@@ -18,6 +18,7 @@ const flashSaleSchema = new Schema<TFlashSale>(
     },
     quantityLimit: { type: Number, min: 1 },
     soldCount: { type: Number, default: 0, min: 0 },
+    saleId: { type: Schema.Types.ObjectId, ref: 'FlashSale' },
   },
   { _id: false },
 );
