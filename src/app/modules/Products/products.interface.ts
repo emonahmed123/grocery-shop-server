@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 export type TFlashSale = {
   /** Percent taken off the regular `price`. */
   discountPercentage: number;
@@ -6,6 +8,8 @@ export type TFlashSale = {
   /** How many units can be sold at the flash price; no limit when empty. */
   quantityLimit?: number;
   soldCount: number;
+  /** the FlashSale history record of this sale */
+  saleId?: Types.ObjectId;
 };
 
 export type TVariation = {

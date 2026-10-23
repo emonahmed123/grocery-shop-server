@@ -15,18 +15,36 @@ const getReviews = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-const createReview = catchAsync(async (req: Request, res: Response) => {
-  const review = req.body;
-  const result = await ReviewServices.createReviewIntoDB(review);
+
+const getReviewEligibility = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await ReviewServices.getReviewEligibilityFromDB(
+    id,
+    req.user.userId,
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Reviews retrieved successfully.',
+    message: 'Review eligibility retrieved successfully.',
+    data: result,
+  });
+});
+
+const createReview = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReviewServices.createReviewIntoDB(
+    req.body,
+    req.user.userId,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Review added successfully.',
     data: result,
   });
 });
 
 export const ReviewControllers = {
   getReviews,
+  getReviewEligibility,
   createReview,
 };
