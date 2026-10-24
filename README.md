@@ -73,7 +73,9 @@ Each module follows the same pattern:
 
 ## API
 
-All routes start with `/api`. Protected routes need the header `Authorization: Bearer <accessToken>`.
+All routes start with `/api`. Protected routes need the access token, either in the header `Authorization: Bearer <accessToken>` or in the `accessToken` cookie.
+
+Login, refresh, password change and Google login also set the tokens as httpOnly cookies (`accessToken`, `refreshToken`), next to returning them in the body. `POST /api/auth/refresh-token` reads the `refreshToken` cookie first, then `refreshToken` in the body. `POST /api/auth/logout` clears both cookies. In production the cookies are `Secure; SameSite=None`, because the store and the API are on different sites; locally they are `SameSite=Lax`. Browsers may only send them from `CLIENT_URL` (and `http://localhost:3000` outside production).
 
 Every response has the same shape:
 
@@ -90,7 +92,7 @@ Every response has the same shape:
 
 | Module      | Base path          | Main routes                                                                                                                                                                                              |
 | ----------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth        | `/api/auth`        | `POST /signup`, `POST /login`, `POST /googleUser`, `POST /refresh-token`, `GET /me`, `POST /change`, `POST /change-password`, `POST /forget-password`, `POST /reset-password`, `POST /makeadmin` (admin) |
+| Auth        | `/api/auth`        | `POST /signup`, `POST /login`, `POST /googleUser`, `POST /refresh-token`, `POST /logout`, `GET /me`, `POST /change`, `POST /change-password`, `POST /forget-password`, `POST /reset-password`, `POST /makeadmin` (admin) |
 | Products    | `/api/product`     | `GET /`, `GET /:id`, `GET /flash-sale`; admin: `POST /`, `PUT /:id`, `DELETE /:id`, `POST /flash-sale`, `DELETE /:id/flash-sale`                                                                         |
 | Categories  | `/api/categories`  | `GET /`, `GET /:slug`; admin: `POST /`, `PATCH /:id`, `DELETE /:id`                                                                                                                                      |
 | Flash sales | `/api/flash-sales` | admin: `GET /history`, `GET /products/:id/summary`                                                                                                                                                       |
@@ -129,7 +131,7 @@ Open `.env` and fill in the values. You need at least these to start:
 | `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN` | e.g. `1d` and `30d`            |
 | `BCRYPT_SALT_ROUNDS`                              | e.g. `12`                      |
 
-The `SMTP_*`, `EMAIL_FROM`, `RESET_PASS_UI_LINK` and `CLIENT_URL` values are only needed for emails (password reset and order updates). Without them the API still runs; order emails fail quietly (the error is only logged). `STORE_ID`, `SIGNATURE_KEY` and `PAYMENT_URL` are kept for online payment and are not used yet.
+`CLIENT_URL` is the store's address: CORS lets browsers send auth cookies only from there, and order emails link to it. The `SMTP_*`, `EMAIL_FROM` and `RESET_PASS_UI_LINK` values are only needed for emails (password reset and order updates). Without them the API still runs; order emails fail quietly (the error is only logged). `STORE_ID`, `SIGNATURE_KEY` and `PAYMENT_URL` are kept for online payment and are not used yet.
 
 ### 4. Start the server
 

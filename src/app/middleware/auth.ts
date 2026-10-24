@@ -7,10 +7,12 @@ import config from '../config';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
 import { TUserRole } from '../modules/user/user.interface';
+import { tokenUtils } from '../utils/token';
 
 const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req?.headers?.authorization?.split(' ')[1];
+    // Bearer header first (the store's server), then the cookie (a browser)
+    const token = tokenUtils.getAccessTokenFromRequest(req);
     // console.log(token);
     // checking if the token is missing
     if (!token) {
