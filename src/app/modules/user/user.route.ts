@@ -29,6 +29,7 @@ router.post(
   userController.loginUser,
 );
 router.post('/refresh-token', userController.refreshToken);
+router.post('/logout', userController.logoutUser);
 router.post(
   '/change-password',
   auth(USER_ROLE.admin, USER_ROLE.user),

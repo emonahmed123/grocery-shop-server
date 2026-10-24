@@ -3,6 +3,8 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { Request, Response } from 'express';
 import { userService } from './user.service';
+import { tokenUtils } from '../../utils/token';
+import { CookieUtils } from '../../utils/cookie';
 
 const Createsignup = catchAsync(async (req: Request, res: Response) => {
   const result = await userService.createSingupIntoDb(req.body);
@@ -17,6 +19,8 @@ const Createsignup = catchAsync(async (req: Request, res: Response) => {
 
 const loginUser = catchAsync(async (req, res) => {
   const result = await userService.loginUser(req.body);
+  // the tokens go in httpOnly cookies and, as before, in the body
+  tokenUtils.setAuthCookies(res, result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -27,9 +31,13 @@ const loginUser = catchAsync(async (req, res) => {
 });
 
 const refreshToken = catchAsync(async (req, res) => {
+  // the cookie first, then the body or header older clients send it in
   const token =
-    req.body?.refreshToken || req?.headers?.authorization?.split(' ')[1];
+    CookieUtils.getCookie(req, 'refreshToken') ||
+    req.body?.refreshToken ||
+    req?.headers?.authorization?.split(' ')[1];
   const result = await userService.refreshToken(token);
+  tokenUtils.setAuthCookies(res, result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -41,6 +49,8 @@ const refreshToken = catchAsync(async (req, res) => {
 
 const changePassword = catchAsync(async (req, res) => {
   const result = await userService.changePassword(req.user, req.body);
+  // tokens from before the change stop working, so the new pair replaces them
+  tokenUtils.setAuthCookies(res, result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -75,12 +85,25 @@ const resetPassword = catchAsync(async (req, res) => {
 
 const googleUser = catchAsync(async (req, res) => {
   const result = await userService.googleUser(req.body);
+  tokenUtils.setAuthCookies(res, result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User is logged in succesfully!',
     data: result,
+  });
+});
+
+// the tokens are stateless, so logging out means removing the cookies
+const logoutUser = catchAsync(async (req, res) => {
+  tokenUtils.clearAuthCookies(res);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User is logged out successfully!',
+    data: null,
   });
 });
 
@@ -128,4 +151,5 @@ export const userController = {
   allUser,
   googleUser,
   addImage,
+  logoutUser,
 };
