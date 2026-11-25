@@ -1,4 +1,4 @@
-import { UIMessage } from 'ai';
+import type { UIMessage } from 'ai' with { 'resolution-mode': 'import' };
 
 /** the body `useChat` from `@ai-sdk/react` sends */
 export type TChatPayload = {
