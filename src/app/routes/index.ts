@@ -7,6 +7,7 @@ import { ReviewRoutes } from '../modules/review/review.routes';
 import { CategoryRoutes } from '../modules/Category/category.routes';
 import { StatsRoutes } from '../modules/Stats/stats.routes';
 import { FlashSaleRoutes } from '../modules/FlashSale/flashSale.routes';
+import { ChatRoutes } from '../modules/chat/chat.routes';
 
 const router = express.Router();
 
@@ -39,6 +40,10 @@ const modulesRoutes = [
   {
     path: '/flash-sales',
     route: FlashSaleRoutes,
+  },
+  {
+    path: '/chat',
+    route: ChatRoutes,
   },
 ];
 
