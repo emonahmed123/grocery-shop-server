@@ -1,7 +1,7 @@
-import { pipeUIMessageStreamToResponse } from 'ai';
 import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { ChatServices } from './chat.service';
+import { loadAiSdk } from './chat.sdk';
 
 // streams the reply as it is written, instead of the usual JSON response
 const streamReply = catchAsync(async (req: Request, res: Response) => {
@@ -16,7 +16,8 @@ const streamReply = catchAsync(async (req: Request, res: Response) => {
 
   // Express's version of `createUIMessageStreamResponse`, which returns a
   // web Response that Express cannot send
-  pipeUIMessageStreamToResponse({ response: res, stream });
+  const { ai } = await loadAiSdk();
+  ai.pipeUIMessageStreamToResponse({ response: res, stream });
 });
 
 export const ChatControllers = {

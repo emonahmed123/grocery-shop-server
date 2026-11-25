@@ -1,14 +1,4 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import {
-  convertToModelMessages,
-  isStepCount,
-  smoothStream,
-  streamText,
-  tool,
-  toUIMessageStream,
-  UIMessage,
-  validateUIMessages,
-} from 'ai';
+import type { UIMessage } from 'ai' with { 'resolution-mode': 'import' };
 import httpStatus from 'http-status';
 import { z } from 'zod';
 import config from '../../config';
@@ -17,6 +7,7 @@ import { Category } from '../Category/category.model';
 import { Product } from '../Products/products.model';
 import { getCurrentPrice } from '../Products/products.utils';
 import { TChatPayload } from './chat.interface';
+import { loadAiSdk, TAiSdk } from './chat.sdk';
 
 // set GEMINI_MODEL in .env to switch models without a code change
 const CHAT_MODEL = config.gemini_model || 'gemini-3.5-flash-lite';
@@ -36,7 +27,8 @@ const MAX_STEPS = 5;
 const escapeRegex = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const tools = {
+// built once the AI SDK has loaded (see chat.sdk.ts)
+const buildTools = (tool: TAiSdk['tool']) => ({
   searchProducts: tool({
     description:
       'Search the shop for products by name, tag or category. Returns up to 8 products with their current price and stock.',
@@ -124,22 +116,32 @@ const tools = {
       }));
     },
   }),
-};
+});
 
-const getModel = () => {
+let chatTools: ReturnType<typeof buildTools> | undefined;
+
+const streamReply = async (payload: TChatPayload, abortSignal: AbortSignal) => {
   if (!config.google_ai_api_key) {
     throw new AppError(
       httpStatus.SERVICE_UNAVAILABLE,
       'The chat assistant is not set up yet',
     );
   }
-  return createGoogleGenerativeAI({ apiKey: config.google_ai_api_key })(
-    CHAT_MODEL,
-  );
-};
 
-const streamReply = async (payload: TChatPayload, abortSignal: AbortSignal) => {
-  const model = getModel();
+  const { ai, google } = await loadAiSdk();
+  const {
+    convertToModelMessages,
+    isStepCount,
+    smoothStream,
+    streamText,
+    toUIMessageStream,
+    validateUIMessages,
+  } = ai;
+  const model = google.createGoogleGenerativeAI({
+    apiKey: config.google_ai_api_key,
+  })(CHAT_MODEL);
+  chatTools ??= buildTools(ai.tool);
+  const tools = chatTools;
 
   let messages: UIMessage[];
   try {
