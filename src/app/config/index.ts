@@ -28,4 +28,8 @@ export default {
   smtp_user: process.env.SMTP_USER,
   smtp_pass: process.env.SMTP_PASS,
   email_from: process.env.EMAIL_FROM,
+
+  // Gemini key for the chat assistant, from https://aistudio.google.com/apikey
+  google_ai_api_key: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+  gemini_model: process.env.GEMINI_MODEL,
 };

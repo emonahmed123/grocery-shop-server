@@ -35,8 +35,10 @@
     "typescript-eslint": "^8.0.1"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.126",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
+    "ai": "^7.0.181",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
